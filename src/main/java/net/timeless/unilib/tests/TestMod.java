@@ -3,16 +3,16 @@ package net.timeless.unilib.tests;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.timeless.unilib.Unilib;
-import net.timeless.unilib.common.BaseMod;
-import net.timeless.unilib.common.BlockProvider;
-import net.timeless.unilib.common.CommonProxy;
-import net.timeless.unilib.common.ItemProvider;
+import net.timeless.unilib.common.*;
 import net.timeless.unilib.common.blocks.BaseBlock;
+import net.timeless.unilib.common.structure.StructureBuilder;
 
 import java.util.Collection;
 
@@ -32,7 +32,20 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
     public void onPreInit(FMLPreInitializationEvent evt) {
         setProxy(proxy);
         super.preInitMod(evt);
-        logger.info("Loading Unilib test mod, using Unilib "+ Unilib.getVersion());
+        logger.info("Loading Unilib test mod, using Unilib " + Unilib.getVersion());
+        StructureBuilder builder = StructureRegistry.getInstance().createStructure("testStructure");
+      /*  builder.startLayer();
+        {
+            builder.fill(Blocks.brick_block, 0, 0, 0, 6, 6, 6);
+            builder.fill(Blocks.bookshelf, 1, 1, 1, 4, 4, 4);
+        }
+        builder.endLayer();*/
+    }
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent evt) {
+        super.initMod(evt);
+        System.out.println(test0+"/"+test1);
     }
 
     @Override

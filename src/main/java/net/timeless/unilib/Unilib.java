@@ -5,6 +5,7 @@ import com.google.common.reflect.ClassPath;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.timeless.unilib.common.BaseMod;
@@ -19,7 +20,7 @@ import java.util.List;
 public class Unilib extends BaseMod {
 
     @Mod.EventHandler
-    public void onPreInit(FMLPreInitializationEvent evt) {
+    public void preInit(FMLPreInitializationEvent evt) {
         super.preInitMod(evt);
         logger.info("Loading Unilib "+ Unilib.getVersion());
         logger.info("Loading content handlers...");
@@ -51,13 +52,29 @@ public class Unilib extends BaseMod {
                         continue;
                     }
                     Class<?> clazz = Class.forName(info.getName(), false, getClass().getClassLoader());
-                    Object instance = clazz.newInstance();
+                    Object instance = null;
+                    if(clazz.isAnnotationPresent(Mod.class)) { // Find the mod instance
+                        Mod mod = clazz.getAnnotation(Mod.class);
+                        List<ModContainer> list = Loader.instance().getModList();
+                        for(ModContainer c : list) {
+                            Object modInstance = c.getMod();
+                            if(modInstance != null) {
+                                if (modInstance.getClass() == clazz) {
+                                    instance = modInstance;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if(instance == null) {
+                        instance = clazz.newInstance();
+                    }
                     ModMetadata metadata = new ModMetadata();
                     ModContainer modContainer = new DummyModContainer(metadata); // Mod container used to change the modid of registred items and blocks
                     Class<?>[] interfaces = clazz.getInterfaces();
                     for (Class<?> in : interfaces) { // Search for possible providers, such as BlockProvider or ItemProvider
                         setContainer(modContainer, controller);
-                        if (in.getCanonicalName().equals(BlockProvider.class.getCanonicalName())) {
+                        if (in == BlockProvider.class) {
                             BlockProvider provider = ((BlockProvider)instance);
                             logger.info("Found block provider: " + clazz.getName());
                             Collection<Block> blocks = provider.createBlocks();
@@ -65,7 +82,7 @@ public class Unilib extends BaseMod {
                             for(Block b : blocks) {
                                 GameRegistry.registerBlock(b, b.getUnlocalizedName().replaceFirst("tile\\.", ""));
                             }
-                        } else if (in.getCanonicalName().equals(ItemProvider.class.getCanonicalName())) {
+                        } else if (in == ItemProvider.class) {
                             ItemProvider provider = ((ItemProvider)instance);
                             logger.info("Found item provider: " + clazz.getName());
                             Collection<Item> items = provider.createItems();
@@ -77,9 +94,10 @@ public class Unilib extends BaseMod {
                         setContainer(container, controller);
                     }
                 } catch (InstantiationException ex) {
-                    logger.info("Failed to load potential provider "+info.getName()+" because it has no empty constructor");
+                    logger.error("Failed to load potential provider "+info.getName()+" because it has no empty constructor");
                 }
                 catch (Exception e) {
+                    logger.error(e);
                     // Shhh, nothing but dreams now
                 }
             }
