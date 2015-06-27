@@ -1,15 +1,17 @@
 package net.timeless.unilib.common.structure;
 
-class BlockCoords {
-    int x;
-    int y;
-    int z;
+import net.minecraft.util.BlockPos;
 
-    BlockCoords() {
+public class BlockCoords {
+    public int x;
+    public int y;
+    public int z;
+
+    public BlockCoords() {
 
     }
 
-    BlockCoords(int x, int y, int z) {
+    public BlockCoords(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -19,6 +21,9 @@ class BlockCoords {
         if(o instanceof BlockCoords) {
             BlockCoords coords = (BlockCoords)o;
             return coords.x == x && coords.y == y && coords.z == z;
+        } else if(o instanceof BlockPos) {
+            BlockPos pos = (BlockPos)o;
+            return pos.getX() == x && pos.getY() == y && pos.getZ() == z;
         }
         return false;
     }

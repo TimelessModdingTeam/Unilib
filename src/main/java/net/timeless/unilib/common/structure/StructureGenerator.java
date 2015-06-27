@@ -1,5 +1,6 @@
 package net.timeless.unilib.common.structure;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -10,5 +11,5 @@ public abstract class StructureGenerator {
 
     public abstract StructureGenerator rotateClockwise();
 
-    public abstract StructureGenerator rotateTowards();
+    public abstract StructureGenerator rotateTowards(EnumFacing facing);
 }

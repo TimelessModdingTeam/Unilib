@@ -13,6 +13,8 @@ import net.timeless.unilib.Unilib;
 import net.timeless.unilib.common.*;
 import net.timeless.unilib.common.blocks.BaseBlock;
 import net.timeless.unilib.common.structure.StructureBuilder;
+import net.timeless.unilib.common.structure.rules.RandomRule;
+import net.timeless.unilib.common.structure.rules.RepeatRule;
 
 import java.util.Collection;
 
@@ -27,6 +29,7 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
     public static CommonProxy proxy;
     private Block test0;
     private Block test1;
+    private Item structureTest;
 
     @Mod.EventHandler
     public void onPreInit(FMLPreInitializationEvent evt) {
@@ -34,12 +37,19 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
         super.preInitMod(evt);
         logger.info("Loading Unilib test mod, using Unilib " + Unilib.getVersion());
         StructureBuilder builder = StructureRegistry.getInstance().createStructure("testStructure");
-      /*  builder.startLayer();
-        {
-            builder.fill(Blocks.brick_block, 0, 0, 0, 6, 6, 6);
-            builder.fill(Blocks.bookshelf, 1, 1, 1, 4, 4, 4);
+        RepeatRule repeatRule = new RandomRule(2, 4, true);
+        builder.startLayer(); {
+            builder.fillCube(Blocks.bookshelf.getDefaultState(), -3, 0, -3, 6, 6, 6);
+            builder.cube(Blocks.brick_block.getDefaultState(), -3, 0, -3, 6, 6, 6);
         }
-        builder.endLayer();*/
+        builder.repeat(0, 8, 0, repeatRule);
+        builder.endLayer();
+
+        builder.startLayer(); {
+            builder.cube(Blocks.water.getDefaultState(), -3, 6, -3, 6, 1, 6);
+        }
+        builder.addBakedRepeatRule(repeatRule);
+        builder.endLayer();
     }
 
     @Mod.EventHandler
@@ -55,7 +65,7 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
 
     @Override
     public Collection<Item> createItems() {
-        return Lists.newArrayList();
+        return Lists.newArrayList(structureTest = new TestItem("structureTest"));
     }
 
     @Override
