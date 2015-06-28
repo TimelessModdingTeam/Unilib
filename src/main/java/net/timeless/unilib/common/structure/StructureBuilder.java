@@ -12,7 +12,7 @@ import net.timeless.unilib.common.structure.rules.RepeatRule;
 import java.util.*;
 
 public class StructureBuilder extends StructureGenerator {
-    private final HashMap<BlockCoords, IBlockState> blocks;
+    private final HashMap<BlockCoords, BlockList> blocks;
     private int offsetX;
     private int offsetY;
     private int offsetZ;
@@ -44,12 +44,12 @@ public class StructureBuilder extends StructureGenerator {
             for(RepeatRule rule : layer.repeats) {
                 rule.init(world, random, pos);
                 while(rule.continueRepeating(world, random, pos)) {
-                    for (Map.Entry<BlockCoords, IBlockState> e : layer.blocks.entrySet()) {
+                    for (Map.Entry<BlockCoords, BlockList> e : layer.blocks.entrySet()) {
                         BlockCoords coords = e.getKey();
                         int blockX = coords.x + pos.x;
                         int blockY = coords.y + pos.y;
                         int blockZ = coords.z + pos.z;
-                        world.setBlockState(new BlockPos(blockX, blockY, blockZ), e.getValue());
+                        world.setBlockState(new BlockPos(blockX, blockY, blockZ), e.getValue().getRandom(random));
                     }
                     rule.repeat(world, random, pos);
                 }
@@ -100,32 +100,44 @@ public class StructureBuilder extends StructureGenerator {
     }
 
     // TODO: Overload to specify block instead of block state
-    public void setBlock(IBlockState block, int x, int y, int z) {
-        blocks.put(new BlockCoords(x + offsetX, y + offsetY, z + offsetZ), block);
+    public void setBlock(int x, int y, int z, IBlockState block) {
+        setBlock(x, y, z, new BlockList(block));
     }
 
-    public void cube(IBlockState block, int startX, int startY, int startZ, int width, int height, int depth) {
+    public void setBlock(int x, int y, int z, BlockList list) {
+        blocks.put(new BlockCoords(x + offsetX, y + offsetY, z + offsetZ), list);
+    }
+
+    public void cube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
+        cube(startX, startY, startZ, width, height, depth, new BlockList(block));
+    }
+
+    public void cube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
         if(depth > 1) {
-            fillCube(block, startX, startY, startZ, width, height, 1);
-            fillCube(block, startX, startY, startZ + depth - 1, width, height, 1);
+            fillCube(startX, startY, startZ, width, height, 1, list);
+            fillCube(startX, startY, startZ + depth - 1, width, height, 1, list);
         }
 
         if(width > 1) {
-            fillCube(block, startX, startY, startZ, 1, height, depth);
-            fillCube(block, startX + width - 1, startY, startZ, 1, height, depth);
+            fillCube(startX, startY, startZ, 1, height, depth, list);
+            fillCube(startX + width - 1, startY, startZ, 1, height, depth, list);
         }
 
         if(height > 1) {
-            fillCube(block, startX, startY, startZ, width, 1, depth);
-            fillCube(block, startX, startY + height - 1, startZ, width, 1, depth);
+            fillCube(startX, startY, startZ, width, 1, depth, list);
+            fillCube(startX, startY + height - 1, startZ, width, 1, depth, list);
         }
     }
 
-    public void fillCube(IBlockState block, int startX, int startY, int startZ, int width, int height, int depth) {
+    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
+        fillCube(startX, startY, startZ, width, height, depth, new BlockList(block));
+    }
+
+    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
         for(int x = startX;x<startX+width;x++) {
             for(int y = startY;y<startY+height;y++) {
                 for(int z = startZ;z<startZ+depth;z++) {
-                    setBlock(block, x, y, z);
+                    setBlock(x, y, z, list);
                 }
             }
         }

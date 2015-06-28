@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class LayerInfo {
-    public HashMap<BlockCoords, IBlockState> blocks;
+    public HashMap<BlockCoords, BlockList> blocks;
     public List<RepeatRule> repeats;
     public EnumFacing facing;
 

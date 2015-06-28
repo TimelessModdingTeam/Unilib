@@ -2,7 +2,9 @@ package net.timeless.unilib.tests;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStoneBrick;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.Mod;
@@ -12,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.timeless.unilib.Unilib;
 import net.timeless.unilib.common.*;
 import net.timeless.unilib.common.blocks.BaseBlock;
+import net.timeless.unilib.common.structure.BlockList;
 import net.timeless.unilib.common.structure.StructureBuilder;
 import net.timeless.unilib.common.structure.rules.RandomRule;
 import net.timeless.unilib.common.structure.rules.RepeatRule;
@@ -38,15 +41,20 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
         logger.info("Loading Unilib test mod, using Unilib " + Unilib.getVersion());
         StructureBuilder builder = StructureRegistry.getInstance().createStructure("testStructure");
         RepeatRule repeatRule = new RandomRule(2, 4, true);
+        BlockList outsideBlocks = new BlockList(new IBlockState[] {
+                Blocks.stonebrick.getDefaultState(),
+                Blocks.stonebrick.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.CRACKED),
+                Blocks.stonebrick.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.MOSSY)
+        }, new float[] { 0.7f, 0.2f, 0.1f });
         builder.startLayer(); {
-            builder.fillCube(Blocks.bookshelf.getDefaultState(), -3, 0, -3, 6, 6, 6);
-            builder.cube(Blocks.brick_block.getDefaultState(), -3, 0, -3, 6, 6, 6);
+            builder.fillCube(-3, 0, -3, 6, 6, 6, Blocks.bookshelf.getDefaultState());
+            builder.cube(-3, 0, -3, 6, 6, 6, outsideBlocks);
         }
         builder.repeat(0, 8, 0, repeatRule);
         builder.endLayer();
 
         builder.startLayer(); {
-            builder.cube(Blocks.water.getDefaultState(), -3, 6, -3, 6, 1, 6);
+            builder.cube(-3, 6, -3, 6, 1, 6, Blocks.dragon_egg.getDefaultState());
         }
         builder.addBakedRepeatRule(repeatRule);
         builder.endLayer();
