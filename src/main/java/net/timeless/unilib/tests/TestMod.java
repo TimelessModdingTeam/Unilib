@@ -1,12 +1,12 @@
 package net.timeless.unilib.tests;
 
 import com.google.common.collect.Lists;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockStoneBrick;
+import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -46,18 +46,36 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
                 Blocks.stonebrick.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.CRACKED),
                 Blocks.stonebrick.getDefaultState().withProperty(BlockStoneBrick.VARIANT, BlockStoneBrick.EnumType.MOSSY)
         }, new float[] { 0.7f, 0.2f, 0.1f });
-        builder.startLayer(); {
-            builder.fillCube(-3, 0, -3, 6, 6, 6, Blocks.bookshelf.getDefaultState());
-            builder.cube(-3, 0, -3, 6, 6, 6, outsideBlocks);
+        int width = 5;
+        int height = 4;
+        int depth = 5;
+        builder.startComponent(); {
+
+            // Base structure
+            builder.cube(-width/2, 0, -depth/2, width, height+1, depth, Blocks.planks);
+            builder.fillCube(-width/2, 0, -depth/2, width, 1, depth, Blocks.cobblestone);
+            builder.wireCube(-width/2, 0, -depth/2, width, height, depth, Blocks.cobblestone);
+
+            //builder.fillCube(-width/2, height, -depth/2, width, 1, depth, Blocks.planks);
+            builder.cube(-width/2, height, -depth/2, width, 1, depth, Blocks.log);
+
+            builder.cube(-width/2, height+1, -depth/2, width, 1, depth, Blocks.oak_fence);
+
+            // Door
+            builder.fillCube(0, 1, -depth/2, 1, 2, 1, Blocks.air);
+            builder.setBlock(0, 0, -depth / 2 - 1, Blocks.stone_stairs.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+
+            // Windows
+            builder.setBlock(-width/2, 2, 0, Blocks.glass_pane);
+            builder.setBlock(width/2, 2, 0, Blocks.glass_pane);
+            builder.setBlock(0, 2, depth/2, Blocks.glass_pane);
+
+            // Ladder
+            IBlockState ladder = Blocks.ladder.getDefaultState().withProperty(BlockLadder.FACING, EnumFacing.NORTH);
+            builder.fillCube(-1, 1, 1, 1, height, 1, ladder);
         }
         builder.repeat(0, 8, 0, repeatRule);
-        builder.endLayer();
-
-        builder.startLayer(); {
-            builder.cube(-3, 6, -3, 6, 1, 6, Blocks.dragon_egg.getDefaultState());
-        }
-        builder.addBakedRepeatRule(repeatRule);
-        builder.endLayer();
+        builder.endComponent();
     }
 
     @Mod.EventHandler

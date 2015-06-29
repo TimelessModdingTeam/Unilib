@@ -10,12 +10,12 @@ import net.timeless.unilib.common.structure.rules.RepeatRule;
 import java.util.HashMap;
 import java.util.List;
 
-public class LayerInfo {
+public class ComponentInfo {
     public HashMap<BlockCoords, BlockList> blocks;
     public List<RepeatRule> repeats;
     public EnumFacing facing;
 
-    public LayerInfo() {
+    public ComponentInfo() {
         facing = EnumFacing.NORTH;
         blocks = Maps.newHashMap();
         repeats = Lists.newArrayList();

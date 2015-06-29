@@ -2,6 +2,7 @@ package net.timeless.unilib.common.structure;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -17,24 +18,24 @@ public class StructureBuilder extends StructureGenerator {
     private int offsetY;
     private int offsetZ;
     private List<RepeatRule> repeats;
-    private List<LayerInfo> layers;
-    private LayerInfo currentLayer;
+    private List<ComponentInfo> components;
+    private ComponentInfo currentLayer;
 
     public StructureBuilder() {
         blocks = Maps.newHashMap();
         repeats = Lists.newArrayList();
-        layers = Lists.newArrayList();
+        components = Lists.newArrayList();
     }
 
     @Override
     public void generate(World world, int x, int y, int z, Random random) {
         BlockCoords pos = new BlockCoords();
-        for(LayerInfo layer : layers) {
+        for(ComponentInfo layer : components) {
             for(RepeatRule rule : layer.repeats) {
                 rule.reset(world, random, pos);
             }
         }
-        for(LayerInfo layer : layers) {
+        for(ComponentInfo layer : components) {
             int currentX = x;
             int currentY = y;
             int currentZ = z;
@@ -67,8 +68,8 @@ public class StructureBuilder extends StructureGenerator {
         return null;
     }
 
-    public LayerInfo startLayer() {
-        currentLayer = new LayerInfo();
+    public ComponentInfo startComponent() {
+        currentLayer = new ComponentInfo();
         blocks.clear();
         repeats.clear();
         offsetX = 0;
@@ -81,10 +82,10 @@ public class StructureBuilder extends StructureGenerator {
         currentLayer.facing = facing;
     }
 
-    public void endLayer() {
+    public void endComponent() {
         currentLayer.blocks.putAll(blocks);
         currentLayer.repeats.addAll(repeats);
-        layers.add(currentLayer);
+        components.add(currentLayer);
     }
 
     public void setOffset(int x, int y, int z) {
@@ -154,5 +155,42 @@ public class StructureBuilder extends StructureGenerator {
 
     public void addBakedRepeatRule(RepeatRule repeatRule) {
         repeats.add(repeatRule);
+    }
+
+    public void cube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        cube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    }
+
+    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        fillCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    }
+
+    public void wireCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        wireCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    }
+
+    public void wireCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState state) {
+        wireCube(startX, startY, startZ, width, height, depth, new BlockList(state));
+    }
+
+    private void wireCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
+        fillCube(startX, startY, startZ, 1, height, 1, list);
+        fillCube(startX+width-1, startY, startZ, 1, height, 1, list);
+        fillCube(startX+width-1, startY, startZ+depth-1, 1, height, 1, list);
+        fillCube(startX, startY, startZ+depth-1, 1, height, 1, list);
+
+        fillCube(startX, startY, startZ, width, 1, 1, list);
+        fillCube(startX, startY+height, startZ, width, 1, 1, list);
+        fillCube(startX, startY, startZ+depth-1, width, 1, 1, list);
+        fillCube(startX, startY+height, startZ+depth-1, width, 1, 1, list);
+
+        fillCube(startX, startY, startZ, 1, 1, depth, list);
+        fillCube(startX, startY+height, startZ, 1, 1, depth, list);
+        fillCube(startX+width-1, startY, startZ, 1, 1, depth, list);
+        fillCube(startX+width-1, startY+height, startZ, 1, 1, depth, list);
+    }
+
+    public void setBlock(int x, int y, int z, Block block) {
+        setBlock(x, y, z, block.getDefaultState());
     }
 }
