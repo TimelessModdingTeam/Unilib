@@ -9,6 +9,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.timeless.unilib.common.structure.rules.FixedRule;
 import net.timeless.unilib.common.structure.rules.RepeatRule;
+import net.timeless.unilib.utils.Tuple3;
 
 import java.util.*;
 
@@ -59,8 +60,95 @@ public class StructureBuilder extends StructureGenerator {
     }
 
     @Override
-    public StructureGenerator rotateClockwise() {
-        return null;
+    public StructureGenerator rotateClockwise(EnumRotAngle angle) {
+        StructureBuilder copy = new StructureBuilder();
+        float radangle = (float) Math.toRadians(angle.value()); // This angle is sooooooooooo rad
+        for(ComponentInfo oldComp : components) { // Rotate each layer
+            ComponentInfo newComp = new ComponentInfo();
+            newComp.facing = getNextClockwise(oldComp.facing);
+            HashMap<BlockCoords, BlockList> blocks = newComp.blocks;
+            Tuple3<Integer, Integer, Integer> minCoords = mins(oldComp.blocks);
+            Tuple3<Integer, Integer, Integer> maxCoords = maxs(oldComp.blocks);
+            int width = maxCoords.getX() - minCoords.getX();
+            int height = maxCoords.getY() - minCoords.getY();
+            int depth = maxCoords.getZ() - minCoords.getZ();
+
+            int midX = width/2 + minCoords.getX();
+            int midZ = depth/2 + minCoords.getZ();
+            for(BlockCoords coords : oldComp.blocks.keySet()) {
+                float angleToCenter = (float) Math.atan2(coords.z - midZ, coords.x - midX);
+                int dx = midX - coords.x;
+                int dz = midZ - coords.z;
+                float distToCenter = (float) Math.sqrt(dx * dx + dz * dz);
+                float nangle = radangle + angleToCenter;
+                System.out.println(">> "+nangle+" / "+distToCenter+";"+angleToCenter);
+                float newX = (float) Math.floor(Math.cos(nangle) * distToCenter);
+                float newZ = (float) Math.floor(Math.sin(nangle) * distToCenter);
+                BlockCoords newCoords = new BlockCoords((int) newX, coords.y, (int) newZ);
+                blocks.put(newCoords, oldComp.blocks.get(coords));
+            }
+
+            copy.components.add(newComp);
+        }
+        return copy;
+    }
+
+    private double rot_x(float angle, float x, float y) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        return x * cos + y * -sin;
+    }
+
+    private double rot_y(float angle, float x, float y) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        return x * sin + y * cos;
+    }
+
+    private Tuple3<Integer, Integer, Integer> maxs(HashMap<BlockCoords, BlockList> blocks) {
+        Tuple3<Integer, Integer, Integer> result = new Tuple3<>();
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        for(BlockCoords coords : blocks.keySet()) {
+            int x = coords.x;
+            int y = coords.y;
+            int z = coords.z;
+            if(x > maxX) {
+                maxX = x;
+            }
+            if(y > maxY) {
+                maxY = y;
+            }
+            if(z > maxZ) {
+                maxZ = z;
+            }
+        }
+        result.set(maxX, maxY, maxZ);
+        return result;
+    }
+
+    private Tuple3<Integer, Integer, Integer> mins(HashMap<BlockCoords, BlockList> blocks) {
+        Tuple3<Integer, Integer, Integer> result = new Tuple3<>();
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        for(BlockCoords coords : blocks.keySet()) {
+            int x = coords.x;
+            int y = coords.y;
+            int z = coords.z;
+            if(x < minX) {
+                minX = x;
+            }
+            if(y < minY) {
+                minY = y;
+            }
+            if(z < minZ) {
+                minZ = z;
+            }
+        }
+        result.set(minX, minY, minZ);
+        return result;
     }
 
     @Override
@@ -68,52 +156,57 @@ public class StructureBuilder extends StructureGenerator {
         return null;
     }
 
-    public ComponentInfo startComponent() {
+    public StructureBuilder startComponent() {
         currentLayer = new ComponentInfo();
         blocks.clear();
         repeats.clear();
         offsetX = 0;
         offsetY = 0;
         offsetZ = 0;
-        return currentLayer;
+        return this;
     }
 
-    public void setOrientation(EnumFacing facing) {
+    public StructureBuilder setOrientation(EnumFacing facing) {
         currentLayer.facing = facing;
+        return this;
     }
 
-    public void endComponent() {
+    public StructureBuilder endComponent() {
         currentLayer.blocks.putAll(blocks);
         currentLayer.repeats.addAll(repeats);
         components.add(currentLayer);
+        return this;
     }
 
-    public void setOffset(int x, int y, int z) {
+    public StructureBuilder setOffset(int x, int y, int z) {
         this.offsetX = x;
         this.offsetY = y;
         this.offsetZ = z;
+        return this;
     }
 
-    public void translate(int x, int y, int z) {
+    public StructureBuilder translate(int x, int y, int z) {
         offsetX += x;
         offsetY += y;
         offsetZ += z;
+        return this;
     }
 
     // TODO: Overload to specify block instead of block state
-    public void setBlock(int x, int y, int z, IBlockState block) {
-        setBlock(x, y, z, new BlockList(block));
+    public StructureBuilder setBlock(int x, int y, int z, IBlockState block) {
+        return setBlock(x, y, z, new BlockList(block));
     }
 
-    public void setBlock(int x, int y, int z, BlockList list) {
+    public StructureBuilder setBlock(int x, int y, int z, BlockList list) {
         blocks.put(new BlockCoords(x + offsetX, y + offsetY, z + offsetZ), list);
+        return this;
     }
 
-    public void cube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
-        cube(startX, startY, startZ, width, height, depth, new BlockList(block));
+    public StructureBuilder cube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
+        return cube(startX, startY, startZ, width, height, depth, new BlockList(block));
     }
 
-    public void cube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
+    public StructureBuilder cube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
         if(depth > 1) {
             fillCube(startX, startY, startZ, width, height, 1, list);
             fillCube(startX, startY, startZ + depth - 1, width, height, 1, list);
@@ -128,13 +221,14 @@ public class StructureBuilder extends StructureGenerator {
             fillCube(startX, startY, startZ, width, 1, depth, list);
             fillCube(startX, startY + height - 1, startZ, width, 1, depth, list);
         }
+        return this;
     }
 
-    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
-        fillCube(startX, startY, startZ, width, height, depth, new BlockList(block));
+    public StructureBuilder fillCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState block) {
+        return fillCube(startX, startY, startZ, width, height, depth, new BlockList(block));
     }
 
-    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
+    public StructureBuilder fillCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
         for(int x = startX;x<startX+width;x++) {
             for(int y = startY;y<startY+height;y++) {
                 for(int z = startZ;z<startZ+depth;z++) {
@@ -142,38 +236,40 @@ public class StructureBuilder extends StructureGenerator {
                 }
             }
         }
+        return this;
     }
 
-    public void repeat(int spacingX, int spacingY, int spacingZ, int times) {
-        repeat(spacingX, spacingY, spacingZ, new FixedRule(times));
+    public StructureBuilder repeat(int spacingX, int spacingY, int spacingZ, int times) {
+        return repeat(spacingX, spacingY, spacingZ, new FixedRule(times));
     }
 
-    public void repeat(int spacingX, int spacingY, int spacingZ, RepeatRule repeatRule) {
+    public StructureBuilder repeat(int spacingX, int spacingY, int spacingZ, RepeatRule repeatRule) {
         repeatRule.setSpacing(spacingX, spacingY, spacingZ);
-        addBakedRepeatRule(repeatRule);
+        return addBakedRepeatRule(repeatRule);
     }
 
-    public void addBakedRepeatRule(RepeatRule repeatRule) {
+    public StructureBuilder addBakedRepeatRule(RepeatRule repeatRule) {
         repeats.add(repeatRule);
+        return this;
     }
 
-    public void cube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
-        cube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    public StructureBuilder cube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        return cube(startX, startY, startZ, width, height, depth, block.getDefaultState());
     }
 
-    public void fillCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
-        fillCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    public StructureBuilder fillCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        return fillCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
     }
 
-    public void wireCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
-        wireCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
+    public StructureBuilder wireCube(int startX, int startY, int startZ, int width, int height, int depth, Block block) {
+        return wireCube(startX, startY, startZ, width, height, depth, block.getDefaultState());
     }
 
-    public void wireCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState state) {
-        wireCube(startX, startY, startZ, width, height, depth, new BlockList(state));
+    public StructureBuilder wireCube(int startX, int startY, int startZ, int width, int height, int depth, IBlockState state) {
+        return wireCube(startX, startY, startZ, width, height, depth, new BlockList(state));
     }
 
-    private void wireCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
+    private StructureBuilder wireCube(int startX, int startY, int startZ, int width, int height, int depth, BlockList list) {
         fillCube(startX, startY, startZ, 1, height, 1, list);
         fillCube(startX+width-1, startY, startZ, 1, height, 1, list);
         fillCube(startX+width-1, startY, startZ+depth-1, 1, height, 1, list);
@@ -188,9 +284,11 @@ public class StructureBuilder extends StructureGenerator {
         fillCube(startX, startY+height, startZ, 1, 1, depth, list);
         fillCube(startX+width-1, startY, startZ, 1, 1, depth, list);
         fillCube(startX+width-1, startY+height, startZ, 1, 1, depth, list);
+        return this;
     }
 
-    public void setBlock(int x, int y, int z, Block block) {
+    public StructureBuilder setBlock(int x, int y, int z, Block block) {
         setBlock(x, y, z, block.getDefaultState());
+        return this;
     }
 }

@@ -15,6 +15,7 @@ import net.timeless.unilib.Unilib;
 import net.timeless.unilib.common.*;
 import net.timeless.unilib.common.blocks.BaseBlock;
 import net.timeless.unilib.common.structure.BlockList;
+import net.timeless.unilib.common.structure.EnumRotAngle;
 import net.timeless.unilib.common.structure.StructureBuilder;
 import net.timeless.unilib.common.structure.rules.RandomRule;
 import net.timeless.unilib.common.structure.rules.RepeatRule;
@@ -39,7 +40,7 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
         setProxy(proxy);
         super.preInitMod(evt);
         logger.info("Loading Unilib test mod, using Unilib " + Unilib.getVersion());
-        StructureBuilder builder = StructureRegistry.getInstance().createStructure("testStructure");
+        StructureBuilder builder = new StructureBuilder();
         RepeatRule repeatRule = new RandomRule(2, 4, true);
         BlockList outsideBlocks = new BlockList(new IBlockState[] {
                 Blocks.stonebrick.getDefaultState(),
@@ -49,33 +50,30 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
         int width = 5;
         int height = 4;
         int depth = 5;
-        builder.startComponent(); {
+        builder.startComponent()
+            .cube(-width / 2, 0, -depth / 2, width, height + 1, depth, Blocks.planks)
+            .fillCube(-width / 2, 0, -depth / 2, width, 1, depth, Blocks.cobblestone)
+            .wireCube(-width / 2, 0, -depth / 2, width, height, depth, Blocks.cobblestone)
 
-            // Base structure
-            builder.cube(-width/2, 0, -depth/2, width, height+1, depth, Blocks.planks);
-            builder.fillCube(-width/2, 0, -depth/2, width, 1, depth, Blocks.cobblestone);
-            builder.wireCube(-width/2, 0, -depth/2, width, height, depth, Blocks.cobblestone);
+            .cube(-width/2, height, -depth/2, width, 1, depth, Blocks.log)
 
-            //builder.fillCube(-width/2, height, -depth/2, width, 1, depth, Blocks.planks);
-            builder.cube(-width/2, height, -depth/2, width, 1, depth, Blocks.log);
-
-            builder.cube(-width/2, height+1, -depth/2, width, 1, depth, Blocks.oak_fence);
+            .cube(-width/2, height+1, -depth/2, width, 1, depth, Blocks.oak_fence)
 
             // Door
-            builder.fillCube(0, 1, -depth/2, 1, 2, 1, Blocks.air);
-            builder.setBlock(0, 0, -depth / 2 - 1, Blocks.stone_stairs.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+            .fillCube(0, 1, -depth/2, 1, 2, 1, Blocks.air)
+            .setBlock(0, 0, -depth / 2 - 1, Blocks.stone_stairs.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH))
 
             // Windows
-            builder.setBlock(-width/2, 2, 0, Blocks.glass_pane);
-            builder.setBlock(width/2, 2, 0, Blocks.glass_pane);
-            builder.setBlock(0, 2, depth/2, Blocks.glass_pane);
+            .setBlock(-width/2, 2, 0, Blocks.glass_pane)
+            .setBlock(width/2, 2, 0, Blocks.glass_pane)
+            .setBlock(0, 2, depth / 2, Blocks.glass_pane)
 
             // Ladder
-            IBlockState ladder = Blocks.ladder.getDefaultState().withProperty(BlockLadder.FACING, EnumFacing.NORTH);
-            builder.fillCube(-1, 1, 1, 1, height, 1, ladder);
-        }
-        builder.repeat(0, 8, 0, repeatRule);
-        builder.endComponent();
+            .fillCube(-1, 1, 1, 1, height, 1, Blocks.ladder)
+            .repeat(0, 8, 0, repeatRule)
+        .endComponent();
+
+        StructureRegistry.getInstance().registerStructure("testStructure", builder.rotateClockwise(EnumRotAngle.DEGREES_90));
     }
 
     @Mod.EventHandler
