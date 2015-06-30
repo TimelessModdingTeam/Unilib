@@ -68,12 +68,14 @@ public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
             .setBlock(width/2, 2, 0, Blocks.glass_pane)
             .setBlock(0, 2, depth / 2, Blocks.glass_pane)
 
+            .setBlock(0,1,0,Blocks.furnace)
+
             // Ladder
             .fillCube(-1, 1, 1, 1, height, 1, Blocks.ladder)
             .repeat(0, 8, 0, repeatRule)
         .endComponent();
 
-        StructureRegistry.getInstance().registerStructure("testStructure", builder.rotateClockwise(EnumRotAngle.DEGREES_90));
+        StructureRegistry.getInstance().registerStructure("testStructure", builder);
     }
 
     @Mod.EventHandler

@@ -3,6 +3,10 @@ package net.timeless.unilib.common.structure;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateBase;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -62,10 +66,25 @@ public class StructureBuilder extends StructureGenerator {
     @Override
     public StructureGenerator rotateClockwise(EnumRotAngle angle) {
         StructureBuilder copy = new StructureBuilder();
-        float radangle = (float) Math.toRadians(angle.value()); // This angle is sooooooooooo rad
+        float radangle = 0; // This angle is sooooooooooo rad
+        switch(angle) {
+            case DEGREES_180:
+                return rotateClockwise(EnumRotAngle.DEGREES_90).rotateClockwise(EnumRotAngle.DEGREES_90);
+
+            case DEGREES_90:
+                radangle = (float) Math.PI/2f;
+                break;
+
+            case DEGREES_270:
+                radangle = (float) Math.PI*3f/2f;
+                break;
+        }
         for(ComponentInfo oldComp : components) { // Rotate each layer
             ComponentInfo newComp = new ComponentInfo();
-            newComp.facing = getNextClockwise(oldComp.facing);
+            newComp.repeats.addAll(oldComp.repeats);
+            newComp.facing = oldComp.facing;
+            for(int i = 0;i<angle.turnsCount();i++)
+                newComp.facing = getNextClockwise(newComp.facing);
             HashMap<BlockCoords, BlockList> blocks = newComp.blocks;
             Tuple3<Integer, Integer, Integer> minCoords = mins(oldComp.blocks);
             Tuple3<Integer, Integer, Integer> maxCoords = maxs(oldComp.blocks);
@@ -73,19 +92,34 @@ public class StructureBuilder extends StructureGenerator {
             int height = maxCoords.getY() - minCoords.getY();
             int depth = maxCoords.getZ() - minCoords.getZ();
 
-            int midX = width/2 + minCoords.getX();
-            int midZ = depth/2 + minCoords.getZ();
+            float midX = width/2f + minCoords.getX();
+            float midZ = depth/2f + minCoords.getZ();
             for(BlockCoords coords : oldComp.blocks.keySet()) {
                 float angleToCenter = (float) Math.atan2(coords.z - midZ, coords.x - midX);
-                int dx = midX - coords.x;
-                int dz = midZ - coords.z;
+                float dx = midX - coords.x;
+                float dz = midZ - coords.z;
                 float distToCenter = (float) Math.sqrt(dx * dx + dz * dz);
                 float nangle = radangle + angleToCenter;
-                System.out.println(">> "+nangle+" / "+distToCenter+";"+angleToCenter);
-                float newX = (float) Math.floor(Math.cos(nangle) * distToCenter);
-                float newZ = (float) Math.floor(Math.sin(nangle) * distToCenter);
-                BlockCoords newCoords = new BlockCoords((int) newX, coords.y, (int) newZ);
-                blocks.put(newCoords, oldComp.blocks.get(coords));
+                float newX = (float) Math.cos(nangle) * distToCenter;
+                float newZ = (float) Math.sin(nangle) * distToCenter;
+                BlockCoords newCoords = new BlockCoords((int) Math.floor(newX + midX), coords.y, (int) Math.floor(newZ + midZ));
+                BlockList newList = oldComp.blocks.get(coords).copy();
+                IBlockState[] states = newList.getStates();
+                float[] probas = newList.getProbabilities();
+                for(int i = 0;i<states.length;i++) {
+                    IBlockState state = states[i];
+                    Collection<IProperty> properties = state.getPropertyNames();
+                    for(IProperty prop : properties) {
+                        if(prop instanceof PropertyDirection) {
+                            PropertyDirection dir =(PropertyDirection)prop;
+                            EnumFacing facing = (EnumFacing) state.getValue(dir);
+                            for(int j = 0;j<angle.turnsCount();j++)
+                                facing = getNextClockwise(facing);
+                            states[i] = state.withProperty(dir, facing);
+                        }
+                    }
+                }
+                blocks.put(newCoords, newList);
             }
 
             copy.components.add(newComp);

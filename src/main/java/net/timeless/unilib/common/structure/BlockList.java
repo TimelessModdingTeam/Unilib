@@ -2,6 +2,8 @@ package net.timeless.unilib.common.structure;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
+
+import java.util.Arrays;
 import java.util.Random;
 
 public class BlockList {
@@ -29,5 +31,19 @@ public class BlockList {
             index++;
         }
         return result;
+    }
+
+    public BlockList copy() {
+        IBlockState[] newStates = Arrays.copyOf(states, states.length);
+        float[] newProbabilities = Arrays.copyOf(probabilities, probabilities.length);
+        return new BlockList(newStates, newProbabilities);
+    }
+
+    public IBlockState[] getStates() {
+        return states;
+    }
+
+    public float[] getProbabilities() {
+        return probabilities;
     }
 }

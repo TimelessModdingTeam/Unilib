@@ -14,6 +14,9 @@ public abstract class StructureGenerator {
 
     public static EnumFacing getNextClockwise(EnumFacing facing) {
         int index = clockwiseFacings.indexOf(facing);
+        if(index < 0) {
+            throw new IllegalArgumentException();
+        }
         index++;
         index %= clockwiseFacings.size();
         return clockwiseFacings.get(index);
