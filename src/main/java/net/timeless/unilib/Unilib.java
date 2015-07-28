@@ -35,7 +35,8 @@ public class Unilib extends BaseMod {
                     "io.netty.", "ibxm.", "gnu.trove.", "com.typesafe.", "com.jcraft.", "javaw.", "javafx.",
                     "org.eclipse.", "java.", "org.lwjgl.", "scala.", "paulscode.", "org.xml.", "org.w3c.", "org.omg.",
                     "org.objectweb.asm.", "org.jcp.xml.", "org.ietf.jgss.", "oracle.", "netscape.", "sun.",
-                    "net.java.games.", "joptsimple.", "jdk.internal.", "javax.", "tv.twitch.", "sunw.", "jdk.", "LZMA.");
+                    "net.java.games.", "joptsimple.", "jdk.internal.", "javax.", "tv.twitch.", "sunw.", "jdk.", "LZMA.",
+                    "apple.");
             // Get all the classes from the classloader and look for providers
             ClassPath path = ClassPath.from(ClassLoader.getSystemClassLoader());
             for(ClassPath.ResourceInfo info : path.getResources()) {
@@ -88,7 +89,12 @@ public class Unilib extends BaseMod {
                 }
             }
             if(instance == null) {
-                instance = clazz.newInstance();
+                try {
+                    instance = clazz.newInstance();
+
+                } catch(Exception e) {
+                    return; // Shhhhh, nothing happened here...
+                }
             }
             ModMetadata metadata = new ModMetadata();
             ModContainer modContainer = new DummyModContainer(metadata); // Mod container used to change the modid of registred items and blocks
@@ -114,8 +120,6 @@ public class Unilib extends BaseMod {
                 }
                 setContainer(container, controller);
             }
-        } catch (InstantiationException ex) {
-            logger.error("Failed to load potential provider "+info.getName()+" because it has no empty constructor");
         }
         catch (Exception e) {
             logger.error(e);
