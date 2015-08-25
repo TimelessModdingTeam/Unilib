@@ -36,7 +36,7 @@ public class Unilib extends BaseMod {
                     "org.eclipse.", "java.", "org.lwjgl.", "scala.", "paulscode.", "org.xml.", "org.w3c.", "org.omg.",
                     "org.objectweb.asm.", "org.jcp.xml.", "org.ietf.jgss.", "oracle.", "netscape.", "sun.",
                     "net.java.games.", "joptsimple.", "jdk.internal.", "javax.", "tv.twitch.", "sunw.", "jdk.", "LZMA.",
-                    "apple.");
+                    "com.apple.", "apple.");
             // Get all the classes from the classloader and look for providers
             ClassPath path = ClassPath.from(ClassLoader.getSystemClassLoader());
             for(ClassPath.ResourceInfo info : path.getResources()) {
