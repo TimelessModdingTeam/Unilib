@@ -3,6 +3,7 @@ package net.timeless.unilib.client.model.json;
 import com.google.gson.Gson;
 import net.timeless.unilib.Unilib;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.ZipEntry;
@@ -18,7 +19,8 @@ public class TabulaModelHelper {
             path += ".tbl";
         }
 
-        try (ZipInputStream inputStream = new ZipInputStream(Unilib.class.getResourceAsStream(path))) {
+        ZipInputStream inputStream = new ZipInputStream(Unilib.class.getResourceAsStream(path));
+        try {
 
             ZipEntry entry;
 
@@ -34,6 +36,10 @@ public class TabulaModelHelper {
                 }
             }
 
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
             inputStream.close();
         }
 

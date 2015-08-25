@@ -141,7 +141,7 @@ public class StructureBuilder extends StructureGenerator {
     }
 
     private Tuple3<Integer, Integer, Integer> maxs(HashMap<BlockCoords, BlockList> blocks) {
-        Tuple3<Integer, Integer, Integer> result = new Tuple3<>();
+        Tuple3<Integer, Integer, Integer> result = new Tuple3<Integer, Integer, Integer>();
         int maxX = Integer.MIN_VALUE;
         int maxY = Integer.MIN_VALUE;
         int maxZ = Integer.MIN_VALUE;
@@ -164,7 +164,7 @@ public class StructureBuilder extends StructureGenerator {
     }
 
     private Tuple3<Integer, Integer, Integer> mins(HashMap<BlockCoords, BlockList> blocks) {
-        Tuple3<Integer, Integer, Integer> result = new Tuple3<>();
+        Tuple3<Integer, Integer, Integer> result = new Tuple3<Integer, Integer, Integer>();
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;

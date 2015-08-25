@@ -15,14 +15,13 @@ import net.timeless.unilib.Unilib;
 import net.timeless.unilib.common.*;
 import net.timeless.unilib.common.blocks.BaseBlock;
 import net.timeless.unilib.common.structure.BlockList;
-import net.timeless.unilib.common.structure.EnumRotAngle;
 import net.timeless.unilib.common.structure.StructureBuilder;
 import net.timeless.unilib.common.structure.rules.RandomRule;
 import net.timeless.unilib.common.structure.rules.RepeatRule;
 
 import java.util.Collection;
 
-@Mod(modid = TestMod.MODID, version = "1.0", name = "Test Unilib")
+// Disable for testing: @Mod(modid = TestMod.MODID, version = "1.0", name = "Test Unilib")
 public class TestMod extends BaseMod implements BlockProvider, ItemProvider {
 
     public static final String MODID = "unilib_test";

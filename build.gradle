@@ -29,11 +29,12 @@ dependencies {
     // None, for the moment
 }
 
+
 minecraft {
-    version = "1.8-11.14.3.1450"
-    runDir = "minecraft"
+    version = "1.8-11.14.3.1502"
+    runDir = "../run/assets"
+    mappings = "snapshot_20150824"
     replace '${version}', project.version
-    mappings = "snapshot_20141130"
 }
 
 processResources {
