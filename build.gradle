@@ -16,6 +16,8 @@ buildscript {
 }
 
 apply plugin: 'forge'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 version = "0.1-indev"
 group = "net.timeless"
