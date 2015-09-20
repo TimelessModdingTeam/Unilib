@@ -25,6 +25,7 @@ public class Unilib extends BaseMod {
         super.preInitMod(evt);
         logger.info("Loading Unilib "+ Unilib.getVersion());
         logger.info("Loading content handlers...");
+        /*
         try {
             // Get the FML mod controller in order to change the current container later
             LoadController controller = ObfuscationReflectionHelper.getPrivateValue(Loader.class, Loader.instance(), 16);
@@ -60,7 +61,7 @@ public class Unilib extends BaseMod {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private void handleClass(ClassPath.ClassInfo info, LoadController controller, ModContainer container, List<String> forbiddenPackages) {
